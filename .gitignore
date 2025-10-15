@@ -211,3 +211,5 @@ __marimo__/
 /scripts/config.ini
 *.db
 *.sqlite3
+
+.DS_Store
