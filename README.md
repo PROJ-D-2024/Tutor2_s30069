@@ -1,19 +1,30 @@
-# Tutor1 Project
+---
 
-This repository contains a simple Python script created for the Git and GitHub Proficiency Test.
+## Tutor2: Road Sign Data Cleaning and Standardization
 
-## Description
+This part of the project focuses on cleaning and preparing a dataset of road signs for a future analysis or machine learning project.
 
-The script is a command-line application that accepts a `--name` argument and prints a greeting. It includes a `--help` flag to display usage instructions.
+### Database Source
 
-### How to Run
+The dataset is a mock CSV (`raw_road_signs.csv`) representing data collected for road sign analysis. It includes columns for image paths, sign types, GPS coordinates, and recording dates.
 
-1.  Ensure you have Python installed.
-2.  Run the script from your terminal:
+### Local Setup
+
+1.  **Create a virtual environment and install dependencies:**
     ```bash
-    python app_runner.py
+    python -m venv venv
+    source venv/bin/activate
+    pip install pandas
     ```
-3.  To see the help message, run:
+2.  **Create your configuration file:**
+    - In the `scripts/` folder, create a file named `config.ini`.
+    - Add the following content, adjusting the paths to match your local machine:
+      ```ini
+      [Paths]
+      raw_data_csv = /path/on/your/machine/data/raw_road_signs.csv
+      database_path = /path/on/your/machine/data/roadsigns.db
+      ```
+3.  **Run the script:**
     ```bash
-    python app_runner.py --help
+    python scripts/process_data.py
     ```
