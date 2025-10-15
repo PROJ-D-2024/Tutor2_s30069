@@ -2,9 +2,10 @@ import configparser
 import pandas as pd
 import sqlite3
 import os
-import glob 
+import glob
+from configparser import ConfigParser
 
-def load_initial_data(config):
+def load_initial_data(config: ConfigParser) -> bool:
     """
     Scans the YOLO dataset structure, parses all .txt label files,
     and loads the consolidated data into an SQLite database.
@@ -12,7 +13,10 @@ def load_initial_data(config):
     dataset_root = config['Paths']['dataset_root']
     db_path = config['Paths']['database_path']
     
-    os.makedirs(os.path.dirname(db_path), exist_ok=True)
+    db_dir = os.path.dirname(db_path)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
+        
     if os.path.exists(db_path):
         os.remove(db_path)
         print(f"Removed old database at {db_path}")
@@ -31,7 +35,7 @@ def load_initial_data(config):
         
         for txt_file in txt_files:
             base_name = os.path.basename(txt_file)
-            image_name = base_name.split('.txt')[0] 
+            image_name = os.path.splitext(base_name)[0]
 
             try:
                 with open(txt_file, 'r') as f:
@@ -54,7 +58,7 @@ def load_initial_data(config):
         print("Error: No annotations found. Please check the 'dataset_root' path in your config.ini.")
         return False
         
-    df = pd.DataFrame(all_annotations)
+    df: pd.DataFrame = pd.DataFrame(all_annotations)
     
     conn = sqlite3.connect(db_path)
     df.to_sql('raw_annotations', conn, if_exists='replace', index=False)
@@ -64,33 +68,48 @@ def load_initial_data(config):
     return True
 
 
-def clean_and_standardize_data(config):
+def clean_and_standardize_data(config: ConfigParser) -> None:
     """Connects to the DB, cleans the annotation data, and saves it."""
     db_path = config['Paths']['database_path']
     conn = sqlite3.connect(db_path)
     
     print("\nStarting data cleaning and validation...")
     
-    df = pd.read_sql_query("SELECT * FROM raw_annotations", conn)
+    df: pd.DataFrame = pd.read_sql_query("SELECT * FROM raw_annotations", conn)
     print(f"Original data has {len(df)} rows.")
 
+    # This initial dropna ensures that any rows with null values from potential
+    # file parsing errors are removed before further processing.
     df.dropna(inplace=True)
 
+    # Step 1: Data Type Correction
+    # It is crucial to enforce the correct data types for each column.
+    # `class_id` must be an integer for classification, and bounding box
+    # coordinates must be floats for precise calculations.
     df['class_id'] = df['class_id'].astype(int)
     for col in ['x_center', 'y_center', 'width', 'height']:
         df[col] = df[col].astype(float)
     print("Step 1: Verified data types.")
 
+    # Step 2: Outliers and Duplicates
+    # The YOLO format requires normalized coordinates to be within the [0, 1] range.
+    # Any values outside this range are considered outliers or data entry errors and
+    # must be removed to maintain data integrity for model training. Width and height
+    # must also be positive values.
     initial_rows = len(df)
     df = df[
         (df['x_center'] >= 0) & (df['x_center'] <= 1) &
         (df['y_center'] >= 0) & (df['y_center'] <= 1) &
-        (df['width'] > 0) & (df['width'] <= 1) &      
+        (df['width'] > 0) & (df['width'] <= 1) &
         (df['height'] > 0) & (df['height'] <= 1)
     ]
     rows_removed = initial_rows - len(df)
     print(f"Step 2: Removed {rows_removed} rows with invalid bounding box values.")
 
+    # Step 3: Remove Duplicate Entries
+    # Duplicate rows (identical annotations for the same image) can bias a machine
+    # learning model and skew analysis. We remove them to ensure that each
+    # annotation is a unique data point.
     initial_rows = len(df)
     df.drop_duplicates(inplace=True)
     rows_removed = initial_rows - len(df)
@@ -102,7 +121,7 @@ def clean_and_standardize_data(config):
     print(f"\nData cleaning complete. Saved {len(df)} cleaned records to 'cleaned_annotations' table.")
 
 
-def main():
+def main() -> None:
     """Main function to run the data processing pipeline."""
     config = configparser.ConfigParser()
     config.read('scripts/config.ini')
