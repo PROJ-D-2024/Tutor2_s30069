@@ -28,3 +28,23 @@ The dataset is a mock CSV (`raw_road_signs.csv`) representing data collected for
     ```bash
     python scripts/process_data.py
     ```
+
+## Project Showcase and Verification
+
+The following images showcase the final output of the data processing pipeline.
+
+### 1. Visualized Data Distribution
+
+This chart, generated from the final cleaned database, shows the distribution of annotations across all class IDs. It provides a clear overview of the dataset's composition and balance, which is a crucial first step for any analysis or model training.
+
+![Class Distribution Chart](assets/class_distribution.png)
+
+### 2. Cleaned Database Verification
+
+This screenshot shows the `cleaned_annotations` table inside the final `roadsigns.db` file, as viewed in a database browser. It serves as direct proof that the script successfully:
+
+- Loaded thousands of records.
+- Cleaned the data (e.g., correct data types, no null values).
+- Saved the results in a structured and accessible format.
+
+![Database Screenshot](assets/database_screenshot.png)
