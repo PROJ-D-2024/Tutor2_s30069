@@ -1,4 +1,5 @@
 # scripts/showcase_bounding_box.py
+from glob import glob
 import pandas as pd
 import sqlite3
 import os
@@ -36,7 +37,7 @@ def draw_bounding_box_example():
     if not os.path.exists(image_path):
          # Handle the complex ".png.rf.xyz" filenames from the dataset
         image_glob_path = os.path.join(image_root, split, 'images', random_annotation['image_filename'] + '*')
-        possible_files = glob.glob(image_glob_path)
+        possible_files = glob(image_glob_path)
         if not possible_files:
             print(f"Error: Image file not found for annotation: {random_annotation['image_filename']}")
             return
