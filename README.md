@@ -6,7 +6,7 @@ This part of the project focuses on cleaning and preparing a real-world dataset 
 
 ### Database Source
 
-The dataset used is the "Car Object Detection" dataset from Kaggle. It uses the **YOLO (You Only Look Once)** annotation format, where each image in the dataset has a corresponding `.txt` file. Each line in a `.txt` file contains the class ID and the normalized bounding box coordinates for a single detected object.
+The dataset used is the "Traffic Signs Detection" dataset from Kaggle. It uses the **YOLO (You Only Look Once)** annotation format, where each image in the dataset has a corresponding `.txt` file. Each line in a `.txt` file contains the class ID and the normalized bounding box coordinates for a single detected object.
 
 ### Local Setup
 
